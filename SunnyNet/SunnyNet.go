@@ -1239,6 +1239,10 @@ func (s *proxyRequest) https() {
 			return
 		}
 		//如果是其他错误，进行http处理流程，继续判断
+		if s.Target.Port == 443 || s.Target.Port == 8443 {
+			s.httpProcessing(bs, public.TagTcpSSLAgreement)
+			return
+		}
 		s.httpProcessing(bs, public.TagTcpAgreement)
 		return
 	}
