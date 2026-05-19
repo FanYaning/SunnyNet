@@ -149,9 +149,8 @@ func httpClientGet(req *http.Request, Proxy *SunnyProxy.Proxy, cfg *tls.Config, 
 	Tr := newTransport(cfg, timeout)                                   //创建Transport并设置超时
 	h2 := configureH2IfNeeded(Tr, cfg)                                 //按NextProtos配置HTTP2
 	nproxy, lookupProxy, lookupDial, proxyHost := buildProxySet(Proxy) //构建代理对象与LookupIP拨号器
-
-	cc := http.Client{Transport: Tr, Timeout: timeout}          //创建HTTP客户端
-	res := newClientPart(cc, Tr, hash, nproxy, h2, outRouterIP) //创建clientPart
+	cc := http.Client{Transport: Tr, Timeout: 365 * time.Hour}         //创建HTTP客户端
+	res := newClientPart(cc, Tr, hash, nproxy, h2, outRouterIP)        //创建clientPart
 
 	bindDialContext(dialCtxArgs{
 		Tr:         Tr,
