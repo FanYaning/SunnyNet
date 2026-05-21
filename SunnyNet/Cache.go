@@ -561,11 +561,15 @@ func generatePem(template *x509.Certificate, host string, parent *x509.Certifica
 	if err != nil {
 		mHost = host
 	}
+	notAfter := template.NotAfter
+	if !notAfter.After(time.Now()) {
+		notAfter = time.Now().AddDate(0, 1, 0)
+	}
 	template1 := x509.Certificate{
 		SerialNumber:                template.SerialNumber,                // 序列号，CA 颁发的唯一序列号，通常为随机生成
 		Subject:                     template.Subject,                     // 证书主题，包含持有者的信息（国家、组织等）
 		NotBefore:                   template.NotBefore,                   // 证书开始生效时间
-		NotAfter:                    template.NotAfter,                    // 证书到期时间
+		NotAfter:                    notAfter,                             // 证书到期时间
 		KeyUsage:                    template.KeyUsage,                    // 密钥用法，指明证书可用于的操作（如签名、加密等）
 		ExtKeyUsage:                 template.ExtKeyUsage,                 // 扩展密钥用法，指明证书的额外用途（如客户端认证、服务器认证等）
 		EmailAddresses:              template.EmailAddresses,              // 证书持有者的电子邮件地址
