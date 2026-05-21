@@ -1066,15 +1066,27 @@ func (s *proxyRequest) doRequest() error {
 	return r.Err
 }
 func (s *proxyRequest) sendHttps(req *http.Request) {
-	s.Target.Parse(req.Host, public.HttpsDefaultPort)
-	if req.URL.Port() != public.NULL {
-		Port, _ := strconv.Atoi(req.URL.Port())
-		s.Target.Port = uint16(Port)
+	host := req.Host
+	if req.Header != nil {
+		if headerHost := req.Header.Get("Host"); headerHost != "" {
+			host = headerHost
+		}
+	}
+	def := public.HttpsDefaultPort
+	if req.URL.Scheme == "http" {
+		def = public.HttpDefaultPort
+	} else if req.URL.Scheme == "https" {
+		def = public.HttpsDefaultPort
+	}
+	s.Target.Parse(host, def)
+	if port := req.URL.Port(); port != public.NULL {
+		if portInt, err := strconv.Atoi(port); err == nil {
+			s.Target.Port = uint16(portInt)
+		}
 	}
 	_, _ = s.RwObj.WriteString(public.TunnelConnectionEstablished)
 	s.https()
 }
-
 func (s *proxyRequest) https() {
 	//判断有没有连接信息，没有连接地址信息就直接返回
 	if s.Target.Host == public.NULL || s.Target.Port < 1 {
