@@ -4,17 +4,19 @@ import "C"
 import (
 	"bytes"
 	"fmt"
+	"io/ioutil"
+	"net/url"
+	"runtime"
+	"sort"
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/qtgolang/SunnyNet/SunnyNet"
 	"github.com/qtgolang/SunnyNet/src/Call"
 	"github.com/qtgolang/SunnyNet/src/SunnyProxy"
 	"github.com/qtgolang/SunnyNet/src/http"
 	"github.com/qtgolang/SunnyNet/src/public"
-	"io/ioutil"
-	"net/url"
-	"sort"
-	"strconv"
-	"strings"
-	"time"
 )
 
 // GetSunnyVersion 获取SunnyNet版本
@@ -171,6 +173,9 @@ func GetRequestClientIp(MessageId int) string {
 	}
 	k.Lock.Lock()
 	defer k.Lock.Unlock()
+	if k.Global.Drive().Name() == "tun" && runtime.GOOS == "android" {
+		return k.Conn.LocalAddr().String()
+	}
 	return k.Conn.RemoteAddr().String()
 }
 

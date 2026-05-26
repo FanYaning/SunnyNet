@@ -19,6 +19,11 @@ type udpConn struct {
 	data          []byte
 	_Display      bool
 	_note         string
+	packageName   string //安卓模式下 pid 始终为0,但可以获取对应包名
+}
+
+func (u *udpConn) PackageName() string {
+	return u.packageName
 }
 
 func (u *udpConn) SetNote(s string) {

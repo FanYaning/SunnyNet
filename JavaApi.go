@@ -168,16 +168,18 @@ func Java_com_SunnyNet_api_SunnyNetSetCallback(envObj uintptr, clazz uintptr, Su
 		}
 		defer GlobalVM.DetachCurrentThread()
 
+		_PackageName := _env.NewString(Conn.PackageName())
 		_Method := _env.NewString(Conn.Method())
 		_url := _env.NewString(Conn.URL())
 		_er := _env.NewString(Conn.Error())
 		HTTPEventClass := aliasToClass("HTTPEvent")
-		EventConstructor := _env.GetMethodID(HTTPEventClass, "<init>", fmt.Sprintf("(%s%s%s%s%s%s%s%s)%s", sig.Long, sig.Long, sig.Long, sig.Long, sig.String, sig.String, sig.String, sig.Long, sig.Void))
-		EventObj := _env.NewObjectA(HTTPEventClass, EventConstructor, Jvalue(SunnyContext), Jvalue(Conn.Theology()), Jvalue(Conn.MessageId()), Jvalue(Conn.Type()), Jvalue(_Method), Jvalue(_url), Jvalue(_er), Jvalue(Conn.PID()))
+		EventConstructor := _env.GetMethodID(HTTPEventClass, "<init>", fmt.Sprintf("(%s%s%s%s%s%s%s%s%s)%s", sig.Long, sig.Long, sig.Long, sig.Long, sig.String, sig.String, sig.String, sig.String, sig.Long, sig.Void))
+		EventObj := _env.NewObjectA(HTTPEventClass, EventConstructor, Jvalue(SunnyContext), Jvalue(Conn.Theology()), Jvalue(Conn.MessageId()), Jvalue(Conn.Type()), Jvalue(_Method), Jvalue(_url), Jvalue(_er), Jvalue(_PackageName), Jvalue(Conn.PID()))
 
 		_env.CallVoidMethodA(obj, onHTTPCallbackMethodId, Jvalue(EventObj))
 		_env.DeleteLocalRef(EventObj)
 		_env.DeleteLocalRef(_Method)
+		_env.DeleteLocalRef(_PackageName)
 		_env.DeleteLocalRef(_url)
 		_env.DeleteLocalRef(_er)
 		return
@@ -193,15 +195,17 @@ func Java_com_SunnyNet_api_SunnyNetSetCallback(envObj uintptr, clazz uintptr, Su
 		defer GlobalVM.DetachCurrentThread()
 		_LocalAddr := _env.NewString(Conn.LocalAddress())
 		_RemoteAddr := _env.NewString(Conn.RemoteAddress())
+		_PackageName := _env.NewString(Conn.PackageName())
 		_data := _env.NewByteArray(Conn.Body())
 		TCPEventClass := aliasToClass("TCPEvent")
-		EventConstructor := _env.GetMethodID(TCPEventClass, "<init>", fmt.Sprintf("(%s%s%s%s%s%s%s%s)%s", sig.Long, sig.String, sig.String, sig.Long, sig.Long, sig.Long, sig.Long, sig.ByteArray, sig.Void))
-		EventObj := _env.NewObjectA(TCPEventClass, EventConstructor, Jvalue(SunnyContext), Jvalue(_LocalAddr), Jvalue(_RemoteAddr), Jvalue(Conn.Theology()), Jvalue(Conn.MessageId()), Jvalue(Conn.Type()), Jvalue(Conn.PID()), Jvalue(_data))
+		EventConstructor := _env.GetMethodID(TCPEventClass, "<init>", fmt.Sprintf("(%s%s%s%s%s%s%s%s%s)%s", sig.Long, sig.String, sig.String, sig.String, sig.Long, sig.Long, sig.Long, sig.Long, sig.ByteArray, sig.Void))
+		EventObj := _env.NewObjectA(TCPEventClass, EventConstructor, Jvalue(SunnyContext), Jvalue(_LocalAddr), Jvalue(_RemoteAddr), Jvalue(_PackageName), Jvalue(Conn.Theology()), Jvalue(Conn.MessageId()), Jvalue(Conn.Type()), Jvalue(Conn.PID()), Jvalue(_data))
 
 		_env.CallVoidMethodA(obj, onTCPMethodId, Jvalue(EventObj))
 		_env.DeleteLocalRef(EventObj)
 		_env.DeleteLocalRef(_LocalAddr)
 		_env.DeleteLocalRef(_RemoteAddr)
+		_env.DeleteLocalRef(_PackageName)
 		_env.DeleteLocalRef(_data)
 	}
 
@@ -214,15 +218,17 @@ func Java_com_SunnyNet_api_SunnyNetSetCallback(envObj uintptr, clazz uintptr, Su
 		}
 		defer GlobalVM.DetachCurrentThread()
 
+		_PackageName := _env.NewString(Conn.PackageName())
 		_Method := _env.NewString(Conn.Method())
 		_url := _env.NewString(Conn.URL())
 		WebSocketEventClass := aliasToClass("WebSocketEvent")
-		EventConstructor := _env.GetMethodID(WebSocketEventClass, "<init>", fmt.Sprintf("(%s%s%s%s%s%s%s%s)%s", sig.Long, sig.Long, sig.Long, sig.Long, sig.String, sig.String, sig.Long, sig.Long, sig.Void))
-		EventObj := _env.NewObjectA(WebSocketEventClass, EventConstructor, Jvalue(SunnyContext), Jvalue(Conn.Theology()), Jvalue(Conn.MessageId()), Jvalue(Conn.Type()), Jvalue(_Method), Jvalue(_url), Jvalue(Conn.PID()), Jvalue(Conn.MessageType()))
+		EventConstructor := _env.GetMethodID(WebSocketEventClass, "<init>", fmt.Sprintf("(%s%s%s%s%s%s%s%s%s)%s", sig.Long, sig.Long, sig.Long, sig.Long, sig.String, sig.String, sig.String, sig.Long, sig.Long, sig.Void))
+		EventObj := _env.NewObjectA(WebSocketEventClass, EventConstructor, Jvalue(SunnyContext), Jvalue(Conn.Theology()), Jvalue(Conn.MessageId()), Jvalue(Conn.Type()), Jvalue(_Method), Jvalue(_url), Jvalue(_PackageName), Jvalue(Conn.PID()), Jvalue(Conn.MessageType()))
 
 		_env.CallVoidMethodA(obj, onWebSocketMethodId, Jvalue(EventObj))
 		_env.DeleteLocalRef(_Method)
 		_env.DeleteLocalRef(_url)
+		_env.DeleteLocalRef(_PackageName)
 		_env.DeleteLocalRef(EventObj)
 		return
 	}
@@ -237,17 +243,17 @@ func Java_com_SunnyNet_api_SunnyNetSetCallback(envObj uintptr, clazz uintptr, Su
 		defer GlobalVM.DetachCurrentThread()
 		MessageId := Conn.MessageId()
 		SunnyNetUDP.ResetMessage(MessageId, Conn.Body())
-
+		_PackageName := _env.NewString(Conn.PackageName())
 		_LocalAddr := _env.NewString(Conn.LocalAddress())
 		_RemoteAddr := _env.NewString(Conn.RemoteAddress())
 		UDPEventClass := aliasToClass("UDPEvent")
-		EventConstructor := _env.GetMethodID(UDPEventClass, "<init>", fmt.Sprintf("(%s%s%s%s%s%s%s)%s", sig.Long, sig.String, sig.String, sig.Long, sig.Long, sig.Long, sig.Long, sig.Void))
-		EventObj := _env.NewObjectA(UDPEventClass, EventConstructor, Jvalue(SunnyContext), Jvalue(_LocalAddr), Jvalue(_RemoteAddr), Jvalue(Conn.Theology()), Jvalue(MessageId), Jvalue(Conn.Type()), Jvalue(Conn.PID()))
+		EventConstructor := _env.GetMethodID(UDPEventClass, "<init>", fmt.Sprintf("(%s%s%s%s%s%s%s%s)%s", sig.Long, sig.String, sig.String, sig.String, sig.Long, sig.Long, sig.Long, sig.Long, sig.Void))
+		EventObj := _env.NewObjectA(UDPEventClass, EventConstructor, Jvalue(SunnyContext), Jvalue(_LocalAddr), Jvalue(_RemoteAddr), Jvalue(_PackageName), Jvalue(Conn.Theology()), Jvalue(MessageId), Jvalue(Conn.Type()), Jvalue(Conn.PID()))
 		_env.CallVoidMethodA(obj, onUDPMethodId, Jvalue(EventObj))
 		_env.DeleteLocalRef(EventObj)
 		_env.DeleteLocalRef(_LocalAddr)
 		_env.DeleteLocalRef(_RemoteAddr)
-
+		_env.DeleteLocalRef(_PackageName)
 		Conn.SetBody(SunnyNetUDP.GetMessage(MessageId))
 		SunnyNetUDP.DelMessage(MessageId)
 		return
@@ -2047,9 +2053,18 @@ func Java_com_SunnyNet_api_HTTPSetOutRouterIP(envObj uintptr, clazz uintptr, Mes
 	return Api.HTTPSetOutRouterIP(int(MessageId), env.GetString(value))
 }
 
+/*
+Java_com_SunnyNet_api_OnTunSetFd 将 VPN TUN fd 交给 Go 侧读取；ConnectivityManager 用于 Android 10+ 查询连接归属包名。
+对应 Java: public static native boolean OnTunSetFd(long fd, Object ConnectivityManager);
+*/
 //export Java_com_SunnyNet_api_OnTunSetFd
-func Java_com_SunnyNet_api_OnTunSetFd(JavaVM uintptr, reserved uintptr, fd int64) {
-	tun.SetFd(int(fd))
+func Java_com_SunnyNet_api_OnTunSetFd(envObj uintptr, clazz uintptr, fd int64, connectivityManager uintptr) bool {
+	env := Env(envObj)
+	InitTunConnectivityManager(env, connectivityManager)
+	if fd <= 0 {
+		return false
+	}
+	return tun.SetFd(int(fd))
 }
 
 type _GlobalRef struct {

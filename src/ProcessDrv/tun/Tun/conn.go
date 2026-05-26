@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/qtgolang/SunnyNet/src/ProcessDrv/ProcessCheck"
+	"github.com/qtgolang/SunnyNet/src/ProcessDrv/tun/getPackageName"
 	"github.com/qtgolang/SunnyNet/src/ProcessDrv/tun/tunPublic"
 )
 
@@ -23,6 +24,9 @@ type DevConn struct {
 	clientPort uint16
 	serverIP   net.IP
 	serverPort uint16
+
+	packageName       string
+	packageRegistered bool
 
 	// TCP 序列号跟踪
 	clientNext    uint32 // 客户端下一个期望的 seq
@@ -62,6 +66,10 @@ func (d *DevConn) GetPid() string {
 	return strconv.Itoa(int(d.pid))
 }
 
+func (d *DevConn) GetPackageName() string {
+	return d.packageName
+}
+
 func (d *DevConn) IsV6() bool {
 	return !d.v4
 }
@@ -70,8 +78,8 @@ func (d *DevConn) ID() uint64 {
 	return uint64(d.clientPort)
 }
 
-// 构造函数
-func NewDevConn(h io.ReadWriteCloser, clientIP net.IP, clientPort uint16, serverIP net.IP, serverPort uint16, ipv4 bool, clientSynSeq uint32) *DevConn {
+// 构造函数；protocol 为 IP 协议号（TCP=6，UDP=17），仅 Android 用于查询来源包名。
+func NewDevConn(h io.ReadWriteCloser, clientIP net.IP, clientPort uint16, serverIP net.IP, serverPort uint16, ipv4 bool, protocol int, clientSynSeq uint32) *DevConn {
 	// 创建 DevConn 基本信息
 	d := &DevConn{
 		clientIP:   clientIP,               // 客户端 IP
@@ -82,6 +90,14 @@ func NewDevConn(h io.ReadWriteCloser, clientIP net.IP, clientPort uint16, server
 		v4:         ipv4,                   // 是否 IPv4
 		tun:        h,                      // TUN 句柄
 	}
+	// 包名查询走 getPackageName 五元组缓存，减少 JNI 调用
+	pkgRes := getPackageName.GetRequestPackageName(
+		protocol,
+		clientIP.String(), int(clientPort),
+		serverIP.String(), int(serverPort),
+	)
+	d.packageName = pkgRes.Name
+	d.packageRegistered = pkgRes.Registered
 	d.ts = time.Now()
 	// 客户端期望 seq：客户端 ISN + 1
 	// 第一个数据包的 tcp.Seq 必须等于这个值才会被接收

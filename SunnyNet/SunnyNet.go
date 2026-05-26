@@ -193,6 +193,7 @@ type proxyRequest struct {
 	Target                *TargetInfo                      //目标连接信息
 	ProxyHost             string                           //请求之上的代理
 	Pid                   string                           //s5连接过来的pid
+	packageName           string                           //安卓 TUN 来源包名
 	Global                *Sunny                           //继承全局中间件信息
 	Request               *http.Request                    //要发送的请求体
 	Response              response                         //HTTP响应体
@@ -2271,6 +2272,11 @@ func (s *Sunny) OpenDrive(DevMode int) bool {
 	return divert.Run()
 }
 
+// Drive 加载的驱动、全局共享
+func (s *Sunny) Drive() ProcessDrv.Dev {
+	return divert
+}
+
 // ProcessALLName 是否允许所有进程通过 所有 SunnyNet 通用,
 // StopNetwork 是否对所有进程执行一次断网操作
 // 请注意GoLang调试时候，StopNetwork请不要设置true
@@ -2442,6 +2448,7 @@ func (s *proxyRequest) clone() *proxyRequest {
 		defaultScheme: s.defaultScheme,
 		SendTimeout:   s.SendTimeout,
 		rawTarget:     s.rawTarget,
+		packageName:   s.packageName,
 	}
 	if s.outRouterIP != nil {
 		req.outRouterIP = &net.TCPAddr{IP: s.outRouterIP.IP}
@@ -2557,6 +2564,7 @@ func (s *Sunny) handleClientConn(conn net.Conn) {
 		req.setSocket5User("驱动程序")
 		//如果是 通过 NFapi 驱动进来的数据 对连接信息进行赋值
 		req.Pid = info.GetPid()
+		req.packageName = info.GetPackageName()
 		req.Target.Parse(info.GetRemoteAddress(), info.GetRemotePort(), info.IsV6())
 		if s.connHijack != nil {
 			if s.connHijack(&_hijack{req}) {

@@ -126,7 +126,7 @@ func (d *Divert) Run() bool {
 func (d *Divert) SetHandle(
 	callbackTCP func(conn net.Conn),
 	checkProcess func(int32, string) bool,
-	udpSendReceiveFunc func(Type int, Theoni int64, pid uint32, LocalAddress, RemoteAddress string, data []byte) []byte) {
+	udpSendReceiveFunc Tun.UdpFunc) {
 	sessionsMu.Lock()
 	defer sessionsMu.Unlock()
 	d.handleTCP = callbackTCP

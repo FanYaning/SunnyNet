@@ -14,6 +14,7 @@ import (
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
 	"github.com/qtgolang/SunnyNet/src/ProcessDrv/SunnyNetUDP"
+	"github.com/qtgolang/SunnyNet/src/ProcessDrv/tun/getPackageName"
 	"github.com/qtgolang/SunnyNet/src/ProcessDrv/tun/tunPublic"
 	"github.com/qtgolang/SunnyNet/src/public"
 )
@@ -30,8 +31,13 @@ type connEntry struct {
 	v4           bool
 	pid          int32
 	pidFromCheck bool
-	callback     func(Type int, Theoni int64, pid uint32, LocalAddress, RemoteAddress string, data []byte) []byte
+	callback     func(Type int, Theoni int64, pid uint32, LocalAddress, RemoteAddress string, data []byte, packageName string) []byte
 	mu           *sync.Mutex
+	packageName  string
+}
+
+func (c *connEntry) GetPackageName() string {
+	return c.packageName
 }
 
 func (c *connEntry) ToClient(payload []byte) bool {
@@ -116,9 +122,16 @@ func (n *NewTun) handleUDP(srcIP, dstIP net.IP, udp *layers.UDP, v4 bool) {
 	if obj == nil {
 		var mu sync.Mutex
 		obj = &connEntry{ClientIP: clientIP, ClientPort: clientPort, ServerIP: serverIP, ServerPort: serverPort, Theology: atomic.AddInt64(&public.Theology, 1), v4: v4, callback: n.handleUDPCallback, mu: &mu, fd: n.tun}
+		pkgRes := getPackageName.GetRequestPackageName(
+			getPackageName.ProtocolUDP,
+			clientIP.String(), int(clientPort),
+			serverIP.String(), int(serverPort),
+		)
+		obj.packageName = pkgRes.Name
+
 		pid, name := getPidByPort("udp", clientPort)
 		obj.pid = pid
-		obj.pidFromCheck = n.pidFromCheck(obj.pid, name)
+		obj.pidFromCheck = (pkgRes.Name != "" && !pkgRes.Registered) || n.pidFromCheck(obj.pid, name)
 		connTable[clientPort] = obj
 		connMu.Unlock()
 		mu.Lock()
@@ -159,7 +172,7 @@ func (n *NewTun) handleUDP(srcIP, dstIP net.IP, udp *layers.UDP, v4 bool) {
 			if tunPublic.IsLocalIp(obj.ServerIP) {
 				RemoteAddress = net.JoinHostPort("127.0.0.1", strconv.Itoa(int(obj.ServerPort)))
 			}
-			bs := obj.callback(public.SunnyNetUDPTypeSend, obj.Theology, uint32(obj.pid), LocalAddress, RemoteAddress, Payload)
+			bs := obj.callback(public.SunnyNetUDPTypeSend, obj.Theology, uint32(obj.pid), LocalAddress, RemoteAddress, Payload, obj.packageName)
 			if len(bs) < 1 {
 				return
 			}
@@ -202,7 +215,7 @@ func (c *connEntry) loop() {
 				return
 			}
 
-			bs := c.callback(public.SunnyNetUDPTypeReceive, c.Theology, uint32(c.pid), LocalAddress, RemoteAddress, buff[:nt])
+			bs := c.callback(public.SunnyNetUDPTypeReceive, c.Theology, uint32(c.pid), LocalAddress, RemoteAddress, buff[:nt], c.packageName)
 			if len(bs) < 1 {
 				continue
 			}
@@ -218,7 +231,7 @@ func (c *connEntry) loop() {
 			return
 		}
 		if c.callback != nil {
-			c.callback(public.SunnyNetUDPTypeClosed, c.Theology, uint32(c.pid), LocalAddress, RemoteAddress, nil)
+			c.callback(public.SunnyNetUDPTypeClosed, c.Theology, uint32(c.pid), LocalAddress, RemoteAddress, nil, c.packageName)
 		}
 		delete(connTable, c.ClientPort)
 	}

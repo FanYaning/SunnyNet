@@ -88,7 +88,8 @@ func (s *proxyRequest) CallbackTCPRequest(callType int, _msg *public.TcpMsg, Rem
 		localAddr:        LocalAddr,
 		remoteAddr:       hostname,
 		pid:              pid,
-		sunnyContext:     s.Global.SunnyContext,
+		packageName:       s.packageName,
+		sunnyContext:      s.Global.SunnyContext,
 		_Display:         true,
 		_OutRouterIPFunc: s.SetOutRouterIP,
 		_note:            s._note,
@@ -196,7 +197,8 @@ func (s *proxyRequest) CallbackBeforeRequest() {
 		_localAddress:    s.Conn.LocalAddr().String(),
 		_OutRouterIPFunc: s.SetOutRouterIP,
 		updateRawTarget:  s.UpdateRawTarget,
-		_note:            s._note,
+		_note:             s._note,
+		packageName:       s.packageName,
 	}
 	s.Global.scriptHTTPCall(m)
 	s._note = m._note
@@ -266,7 +268,8 @@ func (s *proxyRequest) CallbackBeforeResponse() {
 		_localAddress:    s.Conn.LocalAddr().String(),
 		_OutRouterIPFunc: s.SetOutRouterIP,
 		updateRawTarget:  s.UpdateRawTarget,
-		_note:            s._note,
+		_note:             s._note,
+		packageName:       s.packageName,
 	}
 	s.Global.scriptHTTPCall(m)
 	s._note = m._note
@@ -372,7 +375,8 @@ func (s *proxyRequest) CallbackError(err string) {
 		_localAddress:    s.Conn.LocalAddr().String(),
 		_OutRouterIPFunc: s.SetOutRouterIP,
 		updateRawTarget:  s.UpdateRawTarget,
-		_note:            s._note,
+		_note:             s._note,
+		packageName:       s.packageName,
 	}
 	s.Global.scriptHTTPCall(m)
 	s._note = m._note
@@ -414,7 +418,8 @@ func (s *proxyRequest) CallbackWssRequest(State int, Method, Url string, msg *pu
 		_ClientIP:     s.Conn.RemoteAddr().String(),
 		_localAddress: s.Conn.LocalAddr().String(),
 		_Display:      true,
-		_note:         s._note,
+		_note:             s._note,
+		packageName:       s.packageName,
 	}
 	s.Global.scriptWebsocketCall(m)
 	messageIdLock.Lock()

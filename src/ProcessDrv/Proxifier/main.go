@@ -15,14 +15,15 @@ import (
 	"context"
 	"encoding/binary"
 	"fmt"
-	"github.com/qtgolang/SunnyNet/src/ProcessDrv/Info"
-	"github.com/qtgolang/SunnyNet/src/ProcessDrv/ProcessCheck"
 	"net"
 	"os"
 	"path/filepath"
 	"sync"
 	"time"
 	"unsafe"
+
+	"github.com/qtgolang/SunnyNet/src/ProcessDrv/Info"
+	"github.com/qtgolang/SunnyNet/src/ProcessDrv/ProcessCheck"
 )
 
 var HandleClientConn func(net.Conn)
@@ -193,6 +194,9 @@ func (p *proxyProcessInfo) GetRemotePort() uint16 {
 }
 func (p *proxyProcessInfo) GetPid() string {
 	return p.Pid
+}
+func (p *proxyProcessInfo) GetPackageName() string {
+	return ""
 }
 func (p *proxyProcessInfo) IsV6() bool {
 	return p.V6

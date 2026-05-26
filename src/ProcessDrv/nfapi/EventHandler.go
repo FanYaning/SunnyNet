@@ -6,18 +6,20 @@ package NFapi
 import "C"
 import (
 	"fmt"
-	. "github.com/qtgolang/SunnyNet/src/ProcessDrv/Info"
-	"github.com/qtgolang/SunnyNet/src/ProcessDrv/ProcessCheck"
-	"github.com/qtgolang/SunnyNet/src/ProcessDrv/SunnyNetUDP"
-	net2 "github.com/qtgolang/SunnyNet/src/iphlpapi/net"
-	"github.com/qtgolang/SunnyNet/src/public"
-	"github.com/shirou/gopsutil/process"
 	"net"
 	"regexp"
 	"strconv"
 	"strings"
 	"sync/atomic"
 	"syscall"
+
+	. "github.com/qtgolang/SunnyNet/src/ProcessDrv/Info"
+	"github.com/qtgolang/SunnyNet/src/ProcessDrv/ProcessCheck"
+	"github.com/qtgolang/SunnyNet/src/ProcessDrv/SunnyNetUDP"
+	"github.com/qtgolang/SunnyNet/src/ProcessDrv/tun/Tun"
+	net2 "github.com/qtgolang/SunnyNet/src/iphlpapi/net"
+	"github.com/qtgolang/SunnyNet/src/public"
+	"github.com/shirou/gopsutil/process"
 )
 
 func getTcpInfoPID(tcpInfo string) string {
@@ -231,7 +233,7 @@ func udpClosed(id uint64, pConnInfo *NF_UDP_CONN_INFO) {
 		return
 	}
 	if UdpSendReceiveFunc != nil {
-		UdpSendReceiveFunc(public.SunnyNetUDPTypeClosed, obj.Theoni, pConnInfo.ProcessId.Get(), pConnInfo.LocalAddress.String(), obj.Send.RemoteAddress.String(), nil)
+		UdpSendReceiveFunc(public.SunnyNetUDPTypeClosed, obj.Theoni, pConnInfo.ProcessId.Get(), pConnInfo.LocalAddress.String(), obj.Send.RemoteAddress.String(), nil, "")
 	}
 	mu.Lock()
 	delete(list, id)
@@ -262,7 +264,7 @@ func udpReceive(id uint64, RemoteAddress *SockaddrInx, buf []byte, options *NF_U
 		obj.Receive = &NfOPT{Id: id, RemoteAddress: RemoteAddress.Clone(), options: options.Clone()}
 	}
 	mu.Unlock()
-	bs := UdpSendReceiveFunc(public.SunnyNetUDPTypeReceive, obj.Theoni, pid, LocalAddress.String(), RemoteAddress.String(), buf)
+	bs := UdpSendReceiveFunc(public.SunnyNetUDPTypeReceive, obj.Theoni, pid, LocalAddress.String(), RemoteAddress.String(), buf, "")
 	if len(bs) > 0 {
 		_, _ = Api.NfUdpPostReceive(id, RemoteAddress, bs, options)
 	}
@@ -294,7 +296,7 @@ func udpSend(id uint64, RemoteAddress *SockaddrInx, buf []byte, options *NF_UDP_
 		}
 		mu.Unlock()
 		//这里因为是接收 所以 RemoteAddress 是本地地址 而 LocalAddress 是远程地址
-		bs := UdpSendReceiveFunc(public.SunnyNetUDPTypeReceive, obj.Theoni, pid, RemoteAddress.String(), LocalAddress.String(), buf)
+		bs := UdpSendReceiveFunc(public.SunnyNetUDPTypeReceive, obj.Theoni, pid, RemoteAddress.String(), LocalAddress.String(), buf, "")
 		if len(bs) > 0 {
 			_, _ = Api.NfUdpPostSend(id, RemoteAddress, bs, options)
 		}
@@ -311,13 +313,13 @@ func udpSend(id uint64, RemoteAddress *SockaddrInx, buf []byte, options *NF_UDP_
 		mu.Lock()
 		list[id] = obj
 		mu.Unlock()
-		bs := UdpSendReceiveFunc(public.SunnyNetUDPTypeSend, obj.Theoni, pid, LocalAddress.String(), RemoteAddress.String(), buf)
+		bs := UdpSendReceiveFunc(public.SunnyNetUDPTypeSend, obj.Theoni, pid, LocalAddress.String(), RemoteAddress.String(), buf, "")
 		if len(bs) > 0 {
 			_, _ = Api.NfUdpPostSend(id, RemoteAddress, bs, options)
 		}
 	} else {
 		// 如果连接已建立，则发送数据
-		bs := UdpSendReceiveFunc(public.SunnyNetUDPTypeSend, obj.Theoni, pid, LocalAddress.String(), RemoteAddress.String(), buf)
+		bs := UdpSendReceiveFunc(public.SunnyNetUDPTypeSend, obj.Theoni, pid, LocalAddress.String(), RemoteAddress.String(), buf, "")
 		if len(bs) > 0 {
 			_, _ = Api.NfUdpPostSend(id, RemoteAddress, bs, options)
 		}
@@ -332,4 +334,4 @@ func udpCanSend(id uint64) {
 	return
 }
 
-var UdpSendReceiveFunc func(Type int, Theoni int64, pid uint32, LocalAddress, RemoteAddress string, data []byte) []byte
+var UdpSendReceiveFunc Tun.UdpFunc

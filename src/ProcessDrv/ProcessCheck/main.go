@@ -11,6 +11,7 @@ type DrvInfo interface {
 	GetRemoteAddress() string
 	GetRemotePort() uint16
 	GetPid() string
+	GetPackageName() string
 	IsV6() bool
 	ID() uint64
 	Close() error

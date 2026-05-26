@@ -32,5 +32,5 @@ func UnInstall() bool {
 	return true
 }
 func SetFd(fd int) bool {
-	return false
+	return true
 }

@@ -6,15 +6,16 @@ package tun
 import (
 	"bufio"
 	"bytes"
+	"io"
+	"os/exec"
+	"strings"
+	"syscall"
+
 	"github.com/qtgolang/SunnyNet/src/ProcessDrv/Info"
 	"github.com/qtgolang/SunnyNet/src/ProcessDrv/ProcessCheck"
 	"github.com/qtgolang/SunnyNet/src/ProcessDrv/tun/Tun"
 	divert "github.com/qtgolang/SunnyNet/src/ProcessDrv/tun/WinDivert"
 	"github.com/qtgolang/SunnyNet/src/Resource"
-	"io"
-	"os/exec"
-	"strings"
-	"syscall"
 )
 
 var Divert = divert.NewWinDivert()

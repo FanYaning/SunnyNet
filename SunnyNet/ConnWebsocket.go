@@ -22,12 +22,19 @@ type wsConn struct {
 	_Display      bool
 	_localAddress string
 	_note         string
+	packageName   string //安卓模式下 pid 始终为0,但可以获取对应包名
 }
 
 func (w *wsConn) SetNote(s string) {
 	w._note = s
 }
 
+func (w *wsConn) PackageName() string {
+	return w.packageName
+}
+func (w *wsConn) SetPackageName(packageName string) {
+	w.packageName = packageName
+}
 func (w *wsConn) GetNote() string {
 	return w._note
 }

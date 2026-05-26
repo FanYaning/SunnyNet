@@ -1,8 +1,9 @@
 package Interface
 
 import (
-	"github.com/qtgolang/SunnyNet/src/http"
 	"io"
+
+	"github.com/qtgolang/SunnyNet/src/http"
 )
 
 /* =============================== 脚本 中 使用的接口 ================================================ */
@@ -477,6 +478,15 @@ type general interface {
 		如果为0表示非本机的设备通过代理发起
 	*/
 	PID() int
+
+	/*
+		PackageName
+
+		返回当前会话由发起的安卓进程的包名
+
+		(仅安卓下有效)
+	*/
+	PackageName() string
 
 	/*
 		Theology

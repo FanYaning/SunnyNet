@@ -21,8 +21,15 @@ type tcpConn struct {
 	_Display         bool
 	_OutRouterIPFunc func(string) bool
 	_note            string
+	packageName      string //安卓模式下 pid 始终为0,但可以获取对应包名
 }
 
+func (t *tcpConn) PackageName() string {
+	return t.packageName
+}
+func (t *tcpConn) SetPackageName(packageName string) {
+	t.packageName = packageName
+}
 func (t *tcpConn) SetNote(s string) {
 	t._note = s
 }

@@ -2,16 +2,17 @@ package SunnyNet
 
 import (
 	"bytes"
+	"io"
+	"net/url"
+	"strconv"
+	"strings"
+
 	"github.com/qtgolang/SunnyNet/src/CrossCompiled"
 	"github.com/qtgolang/SunnyNet/src/Interface"
 	"github.com/qtgolang/SunnyNet/src/SunnyProxy"
 	"github.com/qtgolang/SunnyNet/src/crypto/tls"
 	"github.com/qtgolang/SunnyNet/src/http"
 	"github.com/qtgolang/SunnyNet/src/public"
-	"io"
-	"net/url"
-	"strconv"
-	"strings"
 )
 
 type ConnHTTP Interface.ConnHTTPCall
@@ -37,8 +38,15 @@ type httpConn struct {
 	_note                 string
 	_OutRouterIPFunc      func(string) bool
 	updateRawTarget       func(int uint32)
+	packageName           string //安卓模式下 pid 始终为0,但可以获取对应包名
 }
 
+func (h *httpConn) PackageName() string {
+	return h.packageName
+}
+func (h *httpConn) SetPackageName(packageName string) {
+	h.packageName = packageName
+}
 func (h *httpConn) SetNote(s string) {
 	h._note = s
 }

@@ -6,11 +6,12 @@ package NFapi
 import (
 	"encoding/binary"
 	"fmt"
-	. "github.com/qtgolang/SunnyNet/src/ProcessDrv/Info"
-	"github.com/qtgolang/SunnyNet/src/ProcessDrv/nfapi/basetype"
 	"net"
 	"reflect"
 	"unsafe"
+
+	. "github.com/qtgolang/SunnyNet/src/ProcessDrv/Info"
+	"github.com/qtgolang/SunnyNet/src/ProcessDrv/nfapi/basetype"
 )
 
 const (
@@ -98,6 +99,9 @@ func (p *ProcessInfo) GetRemotePort() uint16 {
 }
 func (p *ProcessInfo) GetPid() string {
 	return p.Pid
+}
+func (p *ProcessInfo) GetPackageName() string {
+	return ""
 }
 func (p *ProcessInfo) IsV6() bool {
 	return p.V6

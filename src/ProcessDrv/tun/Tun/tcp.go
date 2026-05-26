@@ -19,7 +19,7 @@ import (
 func (n *NewTun) handleTCPCommand(tcp *layers.TCP, srcIP, dstIP net.IP, clientPort, serverPort uint16, v4 bool) {
 	if tcp.SYN && !tcp.ACK {
 		pid, name := getPidByPort("tcp", uint16(tcp.SrcPort))
-		s := NewDevConn(n.tun, srcIP, clientPort, dstIP, serverPort, v4, tcp.Seq)
+		s := NewDevConn(n.tun, srcIP, clientPort, dstIP, serverPort, v4, 6, tcp.Seq)
 		s.pid = uint32(pid)
 		sessionsMu.Lock()
 		sessions[clientPort] = s
@@ -35,7 +35,7 @@ func (n *NewTun) handleTCPCommand(tcp *layers.TCP, srcIP, dstIP net.IP, clientPo
 		sessionsMu.Lock()
 		call := n.handleTCPCallback
 		sessionsMu.Unlock()
-		if n.pidFromCheck(pid, name) {
+		if (s.packageName != "" && !s.packageRegistered) || n.pidFromCheck(pid, name) {
 			go func() {
 				var loader *net.TCPAddr
 				if defaultGatewayIP != "" {
@@ -79,7 +79,7 @@ func (n *NewTun) handleTCPCommand(tcp *layers.TCP, srcIP, dstIP net.IP, clientPo
 	sess, ok := sessions[clientPort]
 	sessionsMu.Unlock()
 	if !ok {
-		h2 := NewDevConn(n.tun, srcIP, clientPort, dstIP, serverPort, v4, tcp.Seq)
+		h2 := NewDevConn(n.tun, srcIP, clientPort, dstIP, serverPort, v4, 6, tcp.Seq)
 		_ = SendRstToClient(h2)
 		return
 	}

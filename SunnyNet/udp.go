@@ -3,10 +3,11 @@ package SunnyNet
 import (
 	"bytes"
 	"fmt"
+	"sync"
+
 	"github.com/qtgolang/SunnyNet/src/Call"
 	"github.com/qtgolang/SunnyNet/src/ProcessDrv/SunnyNetUDP"
 	"github.com/qtgolang/SunnyNet/src/public"
-	"sync"
 
 	"net"
 	"sync/atomic"
@@ -170,7 +171,7 @@ func (s *Sunny) listenUdpGo() {
 			go s.goUdp(_info, Item.Tid, addr.String(), _info.RemoteAddress, conn, keyHash)
 		}
 		if Item.remote != nil {
-			bs = s.udpSendReceive(public.SunnyNetUDPTypeSend, Item.Tid, 0, addr.String(), _info.RemoteAddress, _info.Data)
+			bs = s.udpSendReceive(public.SunnyNetUDPTypeSend, Item.Tid, 0, addr.String(), _info.RemoteAddress, _info.Data, "")
 			if len(bs) > 0 {
 				_, _ = Item.remote.Write(bs)
 			}
@@ -191,7 +192,7 @@ func (s *Sunny) goUdp(info *udpInfo, tid int64, Local, Remote string, conn *net.
 			break
 		}
 		// 调用 udpNFSendReceive 方法发送并接收数据，并将返回的数据添加来源信息
-		bs := s.udpSendReceive(public.SunnyNetUDPTypeReceive, tid, 0, Local, Remote, buff[:nt])
+		bs := s.udpSendReceive(public.SunnyNetUDPTypeReceive, tid, 0, Local, Remote, buff[:nt], "")
 		if len(bs) < 1 {
 			continue
 		}
@@ -202,18 +203,24 @@ func (s *Sunny) goUdp(info *udpInfo, tid int64, Local, Remote string, conn *net.
 		_, _ = s.udpSocket.WriteToUDP(data, info.LocalAddress)
 	}
 
-	s.udpSendReceive(public.SunnyNetUDPTypeClosed, tid, 0, Local, Remote, nil)
+	s.udpSendReceive(public.SunnyNetUDPTypeClosed, tid, 0, Local, Remote, nil, "")
 	SunnyNetUDP.DelUDPItem(tid)
 	mu.Lock()
 	delete(list, keyHash)
 	mu.Unlock()
 }
 
-func (s *Sunny) udpSendReceive(Type int, Theoni int64, pid uint32, LocalAddress, RemoteAddress string, data []byte) []byte {
+func (s *Sunny) udpSendReceive(Type int, Theoni int64, pid uint32, LocalAddress, RemoteAddress string, data []byte, packageName string) []byte {
 	if s.disableUDP {
 		return nil
 	}
-	n := &udpConn{theology: Theoni, messageId: NewMessageId(), _type: Type, sunnyContext: s.SunnyContext, pid: int(pid), localAddress: LocalAddress, remoteAddress: RemoteAddress, data: data, _Display: true}
+	pkg := packageName
+	if item := SunnyNetUDP.GetUDPItem(Theoni); item != nil {
+		if p, ok := item.(interface{ GetPackageName() string }); ok && pkg == "" {
+			pkg = p.GetPackageName()
+		}
+	}
+	n := &udpConn{theology: Theoni, messageId: NewMessageId(), _type: Type, sunnyContext: s.SunnyContext, pid: int(pid), packageName: pkg, localAddress: LocalAddress, remoteAddress: RemoteAddress, data: data, _Display: true}
 	s.scriptUDPCall(n)
 	if !n._Display {
 		return n.Body()

@@ -67,6 +67,10 @@ func (d *DevConn) GetPid() string {
 	return strconv.Itoa(int(d.pid))
 }
 
+func (d *DevConn) GetPackageName() string {
+	return ""
+}
+
 func (d *DevConn) IsV6() bool {
 	return !d.v4
 }
