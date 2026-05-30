@@ -173,8 +173,11 @@ func GetRequestClientIp(MessageId int) string {
 	}
 	k.Lock.Lock()
 	defer k.Lock.Unlock()
-	if k.Global.Drive().Name() == "tun" && runtime.GOOS == "android" {
-		return k.Conn.LocalAddr().String()
+	loadDrive := k.Global.Drive()
+	if loadDrive != nil {
+		if loadDrive.Name() == "tun" && runtime.GOOS == "android" {
+			return k.Conn.LocalAddr().String()
+		}
 	}
 	return k.Conn.RemoteAddr().String()
 }
