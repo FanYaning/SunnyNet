@@ -14,3 +14,6 @@ var FrontendIndex []byte
 func ReadVueFile(name string) ([]byte, error) {
 	return nil, io.EOF
 }
+
+//go:embed Cert.html
+var Cert []byte

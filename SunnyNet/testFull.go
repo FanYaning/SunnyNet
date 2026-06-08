@@ -9,6 +9,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"io"
 	"math/big"
 	"os"
 	"strings"
@@ -91,6 +92,14 @@ func (s *Sunny) SetScriptCode(code string) string {
 	return err
 }
 
+func allowOrigin(t string, w io.Writer) {
+	w.Write([]byte(t + "\r\n"))
+	w.Write([]byte("Access-Control-Allow-Origin: *\r\n"))
+	w.Write([]byte("Access-Control-Allow-Methods: *\r\n"))
+	w.Write([]byte("Access-Control-Allow-Headers: *\r\n"))
+	w.Write([]byte("Access-Control-Expose-Headers: *\r\n"))
+}
+
 // 是否是用户自定义脚本编辑请求
 func (s *proxyRequest) isUserScriptCodeEditRequest(request *http.Request) bool {
 	ScriptPage := "/" + s.Global.script.AdminPage
@@ -107,7 +116,8 @@ func (s *proxyRequest) isUserScriptCodeEditRequest(request *http.Request) bool {
 	}
 	if request.URL.Path == strings.ReplaceAll(ScriptPage+"/getEventFunc", "//", "/") {
 		data, _ := json.Marshal(Interface.ExportEvent)
-		_, _ = s.RwObj.WriteString("HTTP/1.1 200 OK\r\nCache-Control: no-cache, must-revalidate\r\nPragma: no-cache\r\nExpires: 0\r\nContent-Length: ")
+		allowOrigin("HTTP/1.1 200 OK", s.RwObj)
+		_, _ = s.RwObj.WriteString("Cache-Control: no-cache, must-revalidate\r\nPragma: no-cache\r\nExpires: 0\r\nContent-Length: ")
 		_, _ = s.RwObj.WriteString(fmt.Sprintf("%d\r\nContent-Type:  application/json\r\n\r\n", len(data)))
 		_, _ = s.RwObj.Write(data)
 		return true
@@ -115,15 +125,17 @@ func (s *proxyRequest) isUserScriptCodeEditRequest(request *http.Request) bool {
 
 	_FileType := strings.ToLower(request.URL.Path)
 	if !strings.HasSuffix(_FileType, ".css") && !strings.HasSuffix(_FileType, ".js") && !strings.HasSuffix(_FileType, ".ttf") {
-		fmt.Println(request.URL.Path, "is not support")
+		//fmt.Println(request.URL.Path, "is not support")
 		return false
 	}
 	data, err := Resource.ReadVueFile(strings.ReplaceAll(request.URL.Path, ScriptPage, ""))
 	if err != nil {
-		fmt.Println(strings.ReplaceAll(request.URL.Path, ScriptPage, ""), err)
+		//fmt.Println(strings.ReplaceAll(request.URL.Path, ScriptPage, ""), err)
 		return false
 	}
-	_, _ = s.RwObj.WriteString("HTTP/1.1 200 OK\r\nCache-Control: no-cache, must-revalidate\r\nPragma: no-cache\r\nExpires: 0\r\nContent-Length: ")
+
+	allowOrigin("HTTP/1.1 200 OK", s.RwObj)
+	_, _ = s.RwObj.WriteString("Cache-Control: no-cache, must-revalidate\r\nPragma: no-cache\r\nExpires: 0\r\nContent-Length: ")
 	if strings.HasSuffix(_FileType, ".css") {
 		mData := bytes.ReplaceAll(data, []byte("url(/assets/codicon"), []byte(strings.ReplaceAll("url("+ScriptPage+"/assets/codicon", "//", "/")))
 		data = mData

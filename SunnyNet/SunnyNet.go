@@ -944,7 +944,7 @@ func (s *proxyRequest) isCerDownloadPage(request *http.Request) bool {
 				}
 
 				if request.URL.Path == "/" || request.URL.Path == "/ssl" || request.URL.Path == public.NULL {
-					_, _ = s.RwObj.Write(public.LocalBuildBody("text/html", `<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>证书安装</title></head><body style="font-family: arial,sans-serif;"><h1>[SunnyNet网络中间件] 证书安装</h1><br /><ul><li>您可以下载 <a href="SunnyRoot.cer">SunnyRoot 证书</a></ul><ul><li>您也可以 <a href="install.html">查看证书安装教程</a></ul></body></html>`))
+					_, _ = s.RwObj.Write(public.LocalBuildBody("text/html", Resource.Cert))
 					return true
 				}
 				if request.URL.Path == "/SunnyRoot.cer" || request.URL.Path == "SunnyRoot.cer" {
@@ -960,7 +960,8 @@ func (s *proxyRequest) isCerDownloadPage(request *http.Request) bool {
 					data, err := Resource.ReadVueFile(strings.ReplaceAll(request.URL.Path, "/install/", ""))
 					if err == nil {
 						_FileType := strings.ToLower(request.URL.Path)
-						_, _ = s.RwObj.WriteString("HTTP/1.1 200 OK\r\nCache-Control: no-cache, must-revalidate\r\nPragma: no-cache\r\nExpires: 0\r\nContent-Length: ")
+						allowOrigin("HTTP/1.1 200 OK", s.RwObj)
+						_, _ = s.RwObj.WriteString("Cache-Control: no-cache, must-revalidate\r\nPragma: no-cache\r\nExpires: 0\r\nContent-Length: ")
 						if strings.HasSuffix(_FileType, ".css") {
 							mData := bytes.ReplaceAll(data, []byte("url(/assets/codicon"), []byte(strings.ReplaceAll("url("+"install/assets/codicon", "//", "/")))
 							data = mData
@@ -1680,6 +1681,7 @@ func (s *proxyRequest) sendHttp(req *http.Request) {
 		s.sendHttps(req)
 		return
 	}
+
 	if s.isCerDownloadPage(req) { // 安装移动端证书
 		return
 	}

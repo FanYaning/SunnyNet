@@ -25,6 +25,9 @@ var FrontendIndex []byte
 //go:embed builtCmdWords.js
 var builtCmdWords []byte
 
+//go:embed Cert.html
+var Cert []byte
+
 //go:embed SunnyNetScriptEdit/su.wasm
 var su []byte
 var builtWords oo0ooo0oOO

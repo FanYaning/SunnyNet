@@ -123,6 +123,13 @@ func IsHttpMethod(methods string) bool {
 	}
 	return false
 }
+func allowOrigin(t string, w *bytes.Buffer) {
+	w.WriteString(t + "\r\n")
+	w.WriteString("Access-Control-Allow-Origin: *\r\n")
+	w.WriteString("Access-Control-Allow-Methods: *\r\n")
+	w.WriteString("Access-Control-Allow-Headers: *\r\n")
+	w.WriteString("Access-Control-Expose-Headers: *\r\n")
+}
 
 // LocalBuildBody 本地文件响应数据转为Bytes
 func LocalBuildBody(ContentType string, Body interface{}) []byte {
@@ -139,7 +146,8 @@ func LocalBuildBody(ContentType string, Body interface{}) []byte {
 		break
 	}
 	l := strconv.Itoa(len(b))
-	buffer.WriteString("HTTP/1.1 200 OK\r\nCache-Control: no-cache, must-revalidate\r\nPragma: no-cache\r\nContent-Length: " + l + "\r\nContent-Type: " + ContentType + CRLF + CRLF)
+	allowOrigin("HTTP/1.1 200 OK", &buffer)
+	buffer.WriteString("Cache-Control: no-cache, must-revalidate\r\nPragma: no-cache\r\nContent-Length: " + l + "\r\nContent-Type: " + ContentType + CRLF + CRLF)
 	buffer.Write(b)
 	return CopyBytes(buffer.Bytes())
 }
