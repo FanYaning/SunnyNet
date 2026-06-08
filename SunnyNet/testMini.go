@@ -4,6 +4,8 @@
 package SunnyNet
 
 import (
+	"io"
+
 	"github.com/qtgolang/SunnyNet/src/http"
 )
 
@@ -20,4 +22,12 @@ func (s *Sunny) SetScriptCode(code string) string {
 // SetScriptPage 设置脚本页面
 func (s *Sunny) SetScriptPage(Page string) string {
 	return "no"
+}
+
+func allowOrigin(t string, w io.Writer) {
+	w.Write([]byte(t + "\r\n"))
+	w.Write([]byte("Access-Control-Allow-Origin: *\r\n"))
+	w.Write([]byte("Access-Control-Allow-Methods: *\r\n"))
+	w.Write([]byte("Access-Control-Allow-Headers: *\r\n"))
+	w.Write([]byte("Access-Control-Expose-Headers: *\r\n"))
 }
